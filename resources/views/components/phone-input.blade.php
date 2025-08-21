@@ -18,10 +18,10 @@
         <span class="ms-2 country-codeno">{{ __($countryCode) }}</span>
     </button>
     <input type="number" name="{{ $name }}" id="{{ $id ?? $name }}" class="form-control @error($name) is-invalid @enderror rounded-end flag-input" value="{{ old($name, $value) }}" placeholder="{{ __($placeholder) }}" />
-</div>
 
-@error($name)
-<div class="invalid-feedback">
-    {{ $message }}
+    @error($name)
+    <div class="invalid-feedback">
+        {{ $message }}
+    </div>
+    @enderror
 </div>
-@enderror

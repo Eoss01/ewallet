@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ActiveStatus;
+use App\Models\Transaction;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -67,7 +68,8 @@ class UserController extends Controller
 
         if ($search = $request->query('search'))
         {
-            $query->where(function ($q) use ($search) {
+            $query->where(function ($q) use ($search)
+            {
                 $q->where('uid', 'like', "%{$search}%")
                 ->orWhere('name', 'like', "%{$search}%");
             });
@@ -92,7 +94,7 @@ class UserController extends Controller
         $request->validate([
             'uid' => 'required|unique:users',
             'name' => 'required|max:255',
-            'phone' => 'required|numeric|max:50',
+            'phone' => 'required|numeric',
             'email' => 'required|email|max:255',
             'password' => 'required|min:8|max:255',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp',
@@ -135,9 +137,29 @@ class UserController extends Controller
      */
     public function show($user_cid)
     {
+        $from_date = Carbon::today()->subDays(7)->format('Y-m-d');
+        $to_date = Carbon::today()->format('Y-m-d');
+        $search_type = null;
+
         $user = User::firstWhere('cid', $user_cid);
 
-        return view('users.show', compact('user'));
+        $transactions = Transaction::whereRelation('wallet', 'user_id', $user->id)->whereBetween('transaction_date', [$from_date, $to_date])->get();
+
+        return view('users.show', compact('from_date', 'to_date', 'search_type', 'user', 'transactions'));
+    }
+
+    public function show_search(Request $request)
+    {
+        $from_date = $request->from_date;
+        $to_date = $request->to_date;
+        $search_type = $request->search_type;
+        $user_cid = $request->user_cid;
+
+        $user = User::firstWhere('cid', $user_cid);
+
+        $transactions = Transaction::whereRelation('wallet', 'user_id', $user->id)->whereBetween('transaction_date', [$from_date, $to_date])->when($search_type, function ($query, $search_type) { return $query->where('transaction_type', $search_type); })->get();
+
+        return view('users.show', compact('from_date', 'to_date', 'search_type', 'user', 'transactions'));
     }
 
     /**
@@ -163,7 +185,7 @@ class UserController extends Controller
         $request->validate([
             'edit_uid' => 'required|unique:users,uid,'.$user->id,
             'edit_name' => 'required|max:255',
-            'edit_phone' => 'required|numeric|max:50',
+            'edit_phone' => 'required|numeric',
             'edit_email' => 'required|email|max:255',
             'edit_password' => 'nullable|min:8|max:255',
             'edit_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp',
@@ -187,7 +209,7 @@ class UserController extends Controller
         }
         else
         {
-            $filenameToStore = null;
+            $filenameToStore = $user->photo;
         }
 
         $user->update([
@@ -223,86 +245,99 @@ class UserController extends Controller
         ]);
     }
 
-    public function profile_edit(User $user, $cid)
+    public function profileEdit(User $user, $user_cid)
     {
-        if (Auth::user()->cid != $cid)
+        if (Auth::user()->cid != $user_cid)
         {
             return Redirect::route('dashboard')->with('error', __('User does not have any of the necessary access rights.'));
         }
 
-        $user = User::firstWhere('cid', $cid);
+        $user = User::firstWhere('cid', $user_cid);
 
         return view('users.profile-edit', compact('user'));
     }
 
-    public function profile_update(Request $request, User $user, $cid)
+    public function profileUpdate(Request $request, User $user)
     {
-        if (Auth::user()->cid != $cid)
+        if (Auth::user()->cid != $request->user_cid)
         {
             return Redirect::route('dashboard')->with('error', __('User does not have any of the necessary access rights.'));
         }
 
-        $validated_data = $request->validate([
+        $user = User::firstWhere('cid', $request->user_cid);
+
+        $request->validate([
             'name' => 'required|max:255',
-            'email' => 'nullable|email|max:255',
-            'password' => 'nullable|confirmed|min:8|max:255',
-            'password_confirmation' => 'nullable|min:8|max:255',
+            'phone' => 'required|numeric',
+            'email' => 'required|email|max:255',
+            'password' => 'nullable|min:8|max:255',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp',
         ]);
-
-        $user = User::firstWhere('cid', $cid);
 
         if ($request->version != $user->version)
         {
             return Redirect::back()->with('error', __('Record has been updated by another user, please try again!'))->withInput();
         }
 
-        $update_user = User::firstWhere('cid', $cid);
-        $update_user->name = $request->name;
-        $update_user->email = $request->email;
-        if ($request->password != null) { $update_user->password = Hash::make($request->password); }
-
-        if ($request->hasFile('photo'))
+        if ($request->hasfile('photo'))
         {
             $file = $request->file('photo');
-            $file_name_to_store = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '_' . date("YmdHis") . '.' . $file->getClientOriginalExtension();
-            Storage::disk('s3')->put('user_photo/'.$file_name_to_store, file_get_contents($file));
-            $update_user->photo = $file_name_to_store;
+            $filenameExtension = $file->getClientOriginalName();
+            $filename = pathinfo($filenameExtension, PATHINFO_FILENAME);
+            $extension = $file->getClientOriginalExtension();
+            $filenameToStore = $filename.'_'.date("YmdHis").'.'.$extension;
+            $path = $file->storeAs('user_photo', $filenameToStore, 's3');
+        }
+        else
+        {
+            $filenameToStore = $user->photo;
         }
 
-        $update_user->update();
+        $user->update([
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'password' => $request->password != null ? Hash::make($request->password) : $user->password,
+            'photo' => $filenameToStore,
+        ]);
 
-        return Redirect::route('profile_edit', ['cid' => $cid])->with('success', __('Your account profile is updated.'));
+        return Redirect::route('users.profile_edit', ['user_cid' => $request->user_cid])->with('success', __('Your account profile is updated.'));
     }
 
-    public function superadministratorProfileEdit(User $user, $cid)
+    public function superadministratorProfileEdit(User $user, $user_cid)
     {
-        if (Auth::user()->cid != $cid)
+        if (Auth::user()->cid != $user_cid)
         {
             return Redirect::route('dashboard')->with('error', __('User does not have any of the necessary access rights.'));
         }
 
-        $superadministrator = User::firstWhere('cid', $cid);
+        $superadministrator = User::firstWhere('cid', $user_cid);
 
         return view('superadministrators.profile-edit', compact('superadministrator'));
     }
 
-    public function superadministratorProfileUpdate(Request $request, User $user, $cid)
+    public function superadministratorProfileUpdate(Request $request, User $user)
     {
-        if (Auth::user()->cid != $cid)
+        if (Auth::user()->cid != $request->user_cid)
         {
             return Redirect::route('dashboard')->with('error', __('User does not have any of the necessary access rights.'));
         }
 
-        $superadministrator = User::firstWhere('cid', $cid);
+        $superadministrator = User::firstWhere('cid', $request->user_cid);
 
-        $validated_data = $request->validate([
+        if (!$superadministrator)
+        {
+            return Redirect::back()->with('error', __('User not found!'))->withInput();
+        }
+
+        $request->validate([
             'uid' => 'required|max:255|unique:users,uid,'.$superadministrator->id,
             'name' => 'required|max:255',
-            'email' => 'nullable|email|max:255',
-            'password' => 'nullable|confirmed|min:8|max:255',
-            'password_confirmation' => 'nullable|min:8|max:255',
+            'phone' => 'required|numeric',
+            'email' => 'required|email|max:255',
+            'password' => 'nullable|min:8|max:255',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp',
+            'join_date' => 'required|date',
         ]);
 
         if ($request->version != $superadministrator->version)
@@ -310,22 +345,30 @@ class UserController extends Controller
             return Redirect::back()->with('error', __('Record has been updated by another user, please try again!'))->withInput();
         }
 
-        $update_superadministrator = User::firstWhere('cid', $cid);
-        $update_superadministrator->uid = $request->uid;
-        $update_superadministrator->name = $request->name;
-        $update_superadministrator->email = $request->email;
-        if ($request->password != null) { $update_superadministrator->password = Hash::make($request->password); }
-
-        if ($request->hasFile('photo'))
+        if ($request->hasfile('photo'))
         {
             $file = $request->file('photo');
-            $file_name_to_store = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '_' . date("YmdHis") . '.' . $file->getClientOriginalExtension();
-            Storage::disk('s3')->put('user_photo/'.$file_name_to_store, file_get_contents($file));
-            $update_superadministrator->photo = $file_name_to_store;
+            $filenameExtension = $file->getClientOriginalName();
+            $filename = pathinfo($filenameExtension, PATHINFO_FILENAME);
+            $extension = $file->getClientOriginalExtension();
+            $filenameToStore = $filename.'_'.date("YmdHis").'.'.$extension;
+            $path = $file->storeAs('user_photo', $filenameToStore, 's3');
+        }
+        else
+        {
+            $filenameToStore = $superadministrator->photo;
         }
 
-        $update_superadministrator->update();
+        $superadministrator->update([
+            'uid' => $request->uid,
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'password' => $request->password != null ? Hash::make($request->password) : $superadministrator->password,
+            'photo' => $filenameToStore,
+            'join_date' => $request->join_date,
+        ]);
 
-        return Redirect::route('superadministrators.profile_edit', ['cid' => $cid])->with('success', __('Your account profile is updated.'));
+        return Redirect::route('superadministrators.profile_edit', ['user_cid' => $request->user_cid])->with('success', __('Your account profile is updated.'));
     }
 }

@@ -97,14 +97,14 @@ class WalletController extends Controller
             'amount' => 'required|numeric|min:1|regex:/^\d{1,13}(\.\d{1,2})?$/',
         ]);
 
+        if ($wallet->wallet_balance < $request->amount)
+        {
+            abort(400, 'Wallet balance is not enough!');
+        }
+
         DB::transaction(function () use ($wallet, $request)
         {
             $wallet->lockForUpdate();
-
-            if ($wallet->wallet_balance < $request->amount)
-            {
-                abort(400, 'Wallet balance is not enough!');
-            }
 
             Transaction::create([
                 'wallet_id' => $wallet->id,

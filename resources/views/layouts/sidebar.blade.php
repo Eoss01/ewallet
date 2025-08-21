@@ -40,7 +40,7 @@
             <a class="dropdown-item" href="@if(Auth::user()->hasRole('superadministrator')) {{ route('superadministrators.profile_edit', ['user_cid' => Auth::user()->cid]) }} @elseif(Auth::user()->hasRole('user')) {{ route('users.profile_edit', ['user_cid' => Auth::user()->cid]) }} @endif"><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">{{ __('Profile') }}</span></a>
             <div class="dropdown-divider"></div>
             @if(Auth::user()->hasRole('user'))
-            <a class="dropdown-item" href="pages-profile.html"><i class="mdi mdi-wallet text-muted fs-16 align-middle me-1"></i> <span class="align-middle">{{ __('Balance') }} : <b>{{ __('RM') }} {{ number_format(Auth::user()->wallet->wallet_balance) }}</b></span></a>
+            <a class="dropdown-item" href="{{ route('dashboard') }}"><i class="mdi mdi-wallet text-muted fs-16 align-middle me-1"></i> <span class="align-middle">{{ __('Balance') }} : <b>{{ __('RM') }} {{ number_format(Auth::user()->wallet->wallet_balance) }}</b></span></a>
             @endif
             <form action="{{ route('logout') }}" method="POST">
                 @csrf

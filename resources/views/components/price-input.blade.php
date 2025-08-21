@@ -19,10 +19,10 @@
         <span class="ms-2 country-codeno">{{ __($currencyCode) }}</span>
     </button>
     <input type="number" name="{{ $name }}" id="{{ $id ?? $name }}" class="form-control @error($name) is-invalid @enderror rounded-end flag-input {{ $readonly ? 'readonly-input' : '' }}" value="{{ old($name, $value) }}" placeholder="{{ __($placeholder) }}" {{ $readonly ? 'readonly' : '' }} />
-</div>
 
-@error($name)
-<div class="invalid-feedback">
-    {{ $message }}
+    @error($name)
+    <div class="invalid-feedback">
+        {{ $message }}
+    </div>
+    @enderror
 </div>
-@enderror

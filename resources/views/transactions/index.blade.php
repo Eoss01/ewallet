@@ -18,6 +18,65 @@
     <div class="row">
         <div class="col-lg-12">
 
+            <div class="card crm-widget">
+                <div class="card-body p-0">
+                    <div class="row row-cols-xxl-4 row-cols-md-3 row-cols-1 g-0">
+                        <div class="col">
+                            <div class="py-4 px-3">
+                                <h5 class="text-muted text-uppercase fs-13">{{ __('Total Deposit') }}</h5>
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="ri-download-2-line display-6 text-muted cfs-22"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h2 class="mb-0 cfs-22">{{ __('RM') }} {{ number_format($total_deposits, 2) }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mt-3 mt-md-0 py-4 px-3">
+                                <h5 class="text-muted text-uppercase fs-13">{{ __('Total Rebate') }}</h5>
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="ri-gift-line display-6 text-muted cfs-22"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h2 class="mb-0 cfs-22">{{ __('RM') }} {{ number_format($total_rebates, 2) }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mt-3 mt-md-0 py-4 px-3">
+                                <h5 class="text-muted text-uppercase fs-13">{{ __('Total Withdrawal') }}</h5>
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="ri-upload-2-line display-6 text-muted cfs-22"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h2 class="mb-0 cfs-22">{{ __('RM') }} {{ number_format($total_withdrawals, 2) }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mt-3 mt-md-0 py-4 px-3">
+                                <h5 class="text-muted text-uppercase fs-13">{{ __('Platform Cash Flow') }}</h5>
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="ri-exchange-dollar-line display-6 text-muted cfs-22"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h2 class="mb-0 cfs-22">{{ __('RM') }} {{ number_format($total_cashflows, 2) }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <x-alert type="success" :message="session('success')" />
             <x-alert type="danger" :message="session('error')" />
 
@@ -62,7 +121,7 @@
 
                                     <div class="col-sm-3">
                                         <div>
-                                            <x-flatpickr-input name="to_date" id="to_date" value="{{ $to_date }}" mode="single" placeholder="{{ __('From Date') }}"/>
+                                            <x-flatpickr-input name="to_date" id="to_date" value="{{ $to_date }}" mode="single" placeholder="{{ __('To Date') }}"/>
                                         </div>
                                     </div>
 
@@ -113,12 +172,10 @@
                                 <td>{{ \Carbon\Carbon::parse($transaction->created_at)->format('Y-m-d h:i A') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="avatar-xs flex-shrink-0 me-3">
-                                            <img src="{{ $transaction->wallet->user->photo != null ? Storage::disk('s3')->url('user_photo/'.$transaction->wallet->user->photo) : asset('assets/images/logo-ewallet.png') }}" alt="" class="img-fluid rounded-circle">
+                                        <div class="flex-shrink-0">
+                                            <img src="{{ $transaction->wallet->user->photo != null ? Storage::disk('s3')->url('user_photo/'.$transaction->wallet->user->photo) : asset('assets/images/logo-ewallet.png') }}" alt="" class="avatar-xxs rounded-circle image_src object-fit-cover">
                                         </div>
-                                        <div class="flex-grow-1">
-                                            <h5 class="fs-13 mb-0"><a href="{{ route('users.show', ['user_cid' => $transaction->wallet->user->cid]) }}" class="text-body d-block" target="_blank">{{ __($transaction->wallet->user->uid) }}</a></h5>
-                                        </div>
+                                        <div class="flex-grow-1 ms-2 name"><a href="{{ route('users.show', ['user_cid' => $transaction->wallet->user->cid]) }}" class="text-body d-block">{{ __($transaction->wallet->user->uid) }}</a></div>
                                     </div>
                                 </td>
                                 <td>{{ __(ucfirst($transaction->transaction_type->value)) }}</td>

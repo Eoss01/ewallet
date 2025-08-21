@@ -37,7 +37,8 @@ class RebateJob implements ShouldQueue
         $wallet = $this->transaction->wallet;
         $rebateAmount = $this->transaction->transaction_amount * ($this->setting->rebate_percent / 100);
 
-        DB::transaction(function () use ($wallet, $rebateAmount) {
+        DB::transaction(function () use ($wallet, $rebateAmount)
+        {
 
             $wallet->lockForUpdate();
 

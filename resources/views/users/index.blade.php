@@ -116,12 +116,10 @@
                                 <td>{{ \Carbon\Carbon::parse($user->join_date)->format('Y-m-d') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="avatar-xs flex-shrink-0 me-3">
-                                            <img src="{{ $user->photo != null ? Storage::disk('s3')->url('user_photo/'.$user->photo) : asset('assets/images/logo-ewallet.png') }}" alt="" class="img-fluid rounded-circle">
+                                        <div class="flex-shrink-0">
+                                            <img src="{{ $user->photo != null ? Storage::disk('s3')->url('user_photo/'.$user->photo) : asset('assets/images/logo-ewallet.png') }}" alt="" class="avatar-xxs rounded-circle image_src object-fit-cover">
                                         </div>
-                                        <div class="flex-grow-1">
-                                            <h5 class="fs-13 mb-0"><a href="{{ route('users.show', ['user_cid' => $user->cid]) }}" class="text-body d-block" target="_blank">{{ __($user->uid) }}</a></h5>
-                                        </div>
+                                        <div class="flex-grow-1 ms-2 name"><a href="{{ route('users.show', ['user_cid' => $user->cid]) }}" class="text-body d-block">{{ __($user->uid) }}</a></div>
                                     </div>
                                 </td>
                                 <td>{{ __($user->name) }}</td>
@@ -312,7 +310,7 @@
 
             $(document).on('click', '.edit-item-btn', function () {
                 let btn = $(this);
-                $('#edit_user_cid').val(btn.data('cid'));
+                $('#user_cid').val(btn.data('cid'));
                 $('#version').val(btn.data('version'));
                 $('#edit_uid').val(btn.data('uid'));
                 $('#edit_name').val(btn.data('name'));

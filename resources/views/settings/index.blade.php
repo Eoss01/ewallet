@@ -36,7 +36,7 @@
 
                         <div class="mt-4">
                             <button type="submit" class="btn btn-primary" id="edit-btn">{{ __('Update') }}</button>
-                            <button type="reset" class="btn btn-light" id="reset-btn">{{ __('Reset') }}</button>
+                            <button type="reset" class="btn btn-light ms-2" id="reset-btn">{{ __('Reset') }}</button>
                         </div>
 
                     </form>

@@ -17,12 +17,10 @@ Route::get('locale/{locale}', [SettingController::class, 'changeLanguage'])->nam
 
 Route::get('/find-users', [UserController::class, 'find_users'])->name('find_users');
 
-// Guest Roles
 Route::group(['middleware' => ['guest']], function() {
 
     Route::get('/', [AuthenticatedSessionController::class, 'create'])->name('login');
 });
-
 
 Route::group(['middleware' => ['auth', 'checkstatus']], function() {
 
@@ -35,7 +33,7 @@ Route::group(['middleware' => ['auth', 'checkstatus']], function() {
     Route::post('/transaction-destroy', [TransactionController::class, 'destroy'])->name('transactions.destroy')->middleware('permission:transaction.destroy');
 
     Route::get('/profile-edit/{user_cid}', [UserController::class, 'profileEdit'])->name('users.profile_edit');
-    Route::put('/profile-update/{user_cid}', [UserController::class, 'profileUpdate'])->name('users.profile_update');
+    Route::put('/profile-update', [UserController::class, 'profileUpdate'])->name('users.profile_update');
 });
 
 Route::group(['middleware' => ['auth', 'checkstatus', 'role:superadministrator']], function () {
@@ -44,6 +42,7 @@ Route::group(['middleware' => ['auth', 'checkstatus', 'role:superadministrator']
     Route::get('/user-search', [UserController::class, 'search'])->name('users.search')->middleware('permission:user');
     Route::post('/user-store', [UserController::class, 'store'])->name('users.store')->middleware('permission:user.create');
     Route::get('/user-show/{user_cid}', [UserController::class, 'show'])->name('users.show')->middleware('permission:user');
+    Route::get('/user-show-search', [UserController::class, 'show_search'])->name('users.show_search')->middleware('permission:user');
     Route::put('/user-update', [UserController::class, 'update'])->name('users.update')->middleware('permission:user.edit');
     Route::post('/user-destroy', [UserController::class, 'destroy'])->name('users.destroy')->middleware('permission:user.destroy');
 
@@ -51,7 +50,7 @@ Route::group(['middleware' => ['auth', 'checkstatus', 'role:superadministrator']
     Route::put('/setting-update', [SettingController::class, 'update'])->name('settings.update')->middleware('permission:setting.edit');
 
     Route::get('/superadministrator-profile-edit/{user_cid}', [UserController::class, 'superadministratorProfileEdit'])->name('superadministrators.profile_edit');
-    Route::put('/superadministrator-profile-update/{user_cid}', [UserController::class, 'superadministratorProfileUpdate'])->name('superadministrators.profile_update');
+    Route::put('/superadministrator-profile-update', [UserController::class, 'superadministratorProfileUpdate'])->name('superadministrators.profile_update');
 });
 
 Route::get('/route-cache', function () {

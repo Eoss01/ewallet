@@ -10,14 +10,17 @@ This is a Laravel-based wallet system that supports deposit, withdrawal, and reb
 ## 2. Installation & Setup
 
 ### Clone the repository
-git clone https://github.com/Eoss01/ewallet.git
-cd ewallet
-composer install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate --seed
-php artisan serve
-php artisan queue:work
+- git clone https://github.com/Eoss01/ewallet.git
+- composer install
+- cp .env.example .env
+- php artisan key:generate
+- php artisan migrate --seed
+- php artisan serve
+- php artisan queue:work
+
+You can use the following credentials to log in to the system:
+- **UID:** `SUPERADMIN9999`
+- **Password:** `123456789`
 
 ## 3. API Endpoints
 | Method | URL                             | Description                                                               |
@@ -31,27 +34,26 @@ Deposits automatically trigger a 1% rebate, processed asynchronously via Queue J
 
 ## 4. Concurrency Handling
 
-Lock Mechanism:
-When updating wallet balances, pessimistic locking is used (DB::transaction() + $wallet->lockForUpdate()) to ensure consistency when multiple deposits, withdrawals, or rebates occur simultaneously.
+- Lock Mechanism:
+  When updating wallet balances, pessimistic locking is used (DB::transaction() + $wallet->lockForUpdate()) to ensure consistency when multiple deposits, withdrawals, or rebates occur simultaneously.
 
-Queue Jobs:
-Rebates are processed asynchronously via RebateJob, which also uses locks to guarantee correctness.
+- Queue Jobs:
+  Rebates are processed asynchronously via RebateJob, which also uses locks to guarantee correctness.
 
-Testing Validation:
-Unit tests cover single deposits, withdrawals, and transaction queries.
-Concurrent deposits and withdrawals are tested to verify wallet balances and transaction counts remain accurate.
+- Testing Validation:
+  Unit tests cover single deposits, withdrawals, and transaction queries.
+  Concurrent deposits and withdrawals are tested to verify wallet balances and transaction counts remain accurate.
 
 ## 5. Testing
 
-Run unit tests
-php artisan test
+- Run unit tests :
+  php artisan test
 
-Run parallel tests
-php artisan test --parallel
+- Run parallel tests:
+  php artisan test --parallel
 
-Test coverage includes:
-
-Single deposit + rebate
-Single withdrawal
-Transaction history queries
-Multiple concurrent deposits and withdrawals (concurrentDepositAndWithdraw)
+- Test coverage includes:
+  Single deposit + rebate
+  Single withdrawal
+  Transaction history queries
+  Multiple concurrent deposits and withdrawals (concurrentDepositAndWithdraw)

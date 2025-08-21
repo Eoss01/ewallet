@@ -7,8 +7,10 @@ use App\Jobs\RebateJob;
 use App\Models\Setting;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\Wallet;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 
@@ -24,9 +26,14 @@ class TransactionController extends Controller
         $search_value = null;
         $search_type = null;
 
+        $total_deposits = Transaction::where('transaction_type', TransactionType::Deposit)->whereBetween('transaction_date', [$from_date, $to_date])->sum('transaction_amount');
+        $total_rebates = Transaction::where('transaction_type', TransactionType::Rebate)->whereBetween('transaction_date', [$from_date, $to_date])->sum('transaction_amount');
+        $total_withdrawals = Transaction::where('transaction_type', TransactionType::Withdrawal)->whereBetween('transaction_date', [$from_date, $to_date])->sum('transaction_amount');
+        $total_cashflows = Wallet::sum('wallet_balance');
+
         $transactions = Transaction::whereBetween('transaction_date', [$from_date, $to_date])->get();
 
-        return view('transactions.index', compact('from_date', 'to_date', 'search_value', 'search_type', 'transactions'));
+        return view('transactions.index', compact('from_date', 'to_date', 'search_value', 'search_type', 'total_deposits', 'total_rebates', 'total_withdrawals', 'total_cashflows', 'transactions'));
     }
 
     public function search(Request $request)
@@ -35,6 +42,11 @@ class TransactionController extends Controller
         $to_date = $request->to_date;
         $search_value = $request->search_value;
         $search_type = $request->search_type;
+
+        $total_deposits = Transaction::where('transaction_type', TransactionType::Deposit)->whereBetween('transaction_date', [$from_date, $to_date])->sum('transaction_amount');
+        $total_rebates = Transaction::where('transaction_type', TransactionType::Rebate)->whereBetween('transaction_date', [$from_date, $to_date])->sum('transaction_amount');
+        $total_withdrawals = Transaction::where('transaction_type', TransactionType::Withdrawal)->whereBetween('transaction_date', [$from_date, $to_date])->sum('transaction_amount');
+        $total_cashflows = Wallet::sum('wallet_balance');
 
         $query = Transaction::whereBetween('transaction_date', [$from_date, $to_date]);
 
@@ -54,7 +66,7 @@ class TransactionController extends Controller
 
         $transactions = $query->get();
 
-        return view('transactions.index', compact('from_date', 'to_date', 'search_value', 'search_type', 'transactions'));
+        return view('transactions.index', compact('from_date', 'to_date', 'search_value', 'search_type', 'total_deposits', 'total_rebates', 'total_withdrawals', 'total_cashflows', 'transactions'));
     }
 
     /**
@@ -90,14 +102,14 @@ class TransactionController extends Controller
 
         $wallet = $user->wallet;
 
+        if ($request->transaction_type === TransactionType::Withdrawal->value && $wallet->wallet_balance < $request->transaction_amount)
+        {
+            return Redirect::back()->with('error_create_transaction', __('Wallet balance is not enough!'))->withInput();
+        }
+
         DB::transaction(function () use ($wallet, $request)
         {
             $wallet->lockForUpdate();
-
-            if ($request->transaction_type === TransactionType::Withdrawal->value && $wallet->wallet_balance < $request->transaction_amount)
-            {
-                return Redirect::back()->with('error_create_transaction', __('Wallet balance is not enough!'))->withInput();
-            }
 
             $transaction = Transaction::create([
                 'wallet_id' => $wallet->id,
@@ -122,7 +134,14 @@ class TransactionController extends Controller
             }
         });
 
-        return Redirect::route('transactions.index')->with('success', __('New ') . __($request->transaction_type) . __(' transaction is created.'));
+        if (Auth::user()->hasRole('superadministrator'))
+        {
+            return Redirect::route('transactions.index')->with('success', __('New ') . __($request->transaction_type) . __(' transaction is created.'));
+        }
+        elseif (Auth::user()->hasRole('user'))
+        {
+            return Redirect::route('dashboard')->with('success', __('New ') . __($request->transaction_type) . __(' transaction is created.'));
+        }
     }
 
     /**

@@ -70,6 +70,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $superadmin = User::create([
             'uid' => 'SUPERADMIN9999',
             'name' => 'SUPERADMIN',
+            'phone' => '123456789',
             'email' => 'superadmin@superadmin.com',
             'password' => Hash::make('123456789'),
             'join_date' => Carbon::today(),
@@ -81,6 +82,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $user = User::create([
             'uid' => 'USER',
             'name' => 'USER',
+            'phone' => '123456789',
             'email' => 'user@user.com',
             'password' => Hash::make('123456789'),
             'join_date' => Carbon::today(),

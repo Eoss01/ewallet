@@ -165,7 +165,7 @@ class WalletFeatureTest extends TestCase
             ]);
         }
 
-        // 執行所有 Deposit 的 RebateJob
+        // 執行所有Deposit的RebateJob
         $depositTxs = Transaction::where('transaction_type', TransactionType::Deposit)->get();
         foreach ($depositTxs as $depositTx)
         {
