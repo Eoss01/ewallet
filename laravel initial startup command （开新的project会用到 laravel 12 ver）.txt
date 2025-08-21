@@ -1,0 +1,86 @@
+composer create-project laravel/laravel ewallet
+setup the env
+php artisan migrate
+
+
+composer require laravel/breeze --dev
+php artisan breeze:install
+npm install
+npm run build
+
+
+composer require spatie/laravel-permission
+php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
+php artisan make:seeder RolesAndPermissionsSeeder
+edit User Models
+edit Database Seeder
+php artisan migrate
+php artisan db:seed
+
+
+composer require guzzlehttp/guzzle
+php artisan install:api
+
+
+composer require imanghafoori/laravel-masterpass
+php artisan vendor:publish --tag=master_password
+MASTER_PASSWORD=$2y$10$HmsHNcQXC5DF5dEVI7HMiuqooZb..pIE1w8v6XOQMxDXf5HRLlcMW
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+
+
+php artisan make:controller DashboardController
+php artisan make:controller SettingController
+php artisan make:controller UserController --resource
+php artisan make:middleware CheckStatus
+php artisan make:middleware Localization
+
+Copy lang folder
+
+Setup the bootstrap middleware
+
+
+composer require league/flysystem-aws-s3-v3:^3.0 --with-all-dependencies
+
+composer require barryvdh/laravel-snappy
+php artisan vendor:publish --provider="Barryvdh\Snappy\ServiceProvider"
+
+'binary'  => env('WKHTML_PDF_BINARY', '"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf"'),
+'binary'  => env('WKHTML_IMG_BINARY', '"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf"'),
+
+# WKHTML_PDF_BINARY='/usr/local/bin/wkhtmltopdf'
+# WKHTML_IMG_BINARY='/usr/local/bin/wkhtmltoimage'
+
+
+composer require maatwebsite/excel
+
+
+composer require spatie/laravel-activitylog
+php artisan vendor:publish --provider="Spatie\Activitylog\ActivitylogServiceProvider" --tag="activitylog-migrations"
+php artisan vendor:publish --provider="Spatie\Activitylog\ActivitylogServiceProvider" --tag="activitylog-config"
+
+
+composer require rap2hpoutre/laravel-log-viewer
+use Rap2hpoutre\LaravelLogViewer\LogViewerController;
+Route::get('settings.logs', [LogViewerController::class, 'index'])->name('settings.logs');
+
+
+composer require askedio/laravel-soft-cascade
+
+
+composer require spatie/laravel-ignition
+
+
+composer require bacon/bacon-qr-code
+
+
+composer require --dev barryvdh/laravel-ide-helper
+
+return [
+    App\Providers\AppServiceProvider::class,
+    Barryvdh\Snappy\ServiceProvider::class,
+    Maatwebsite\Excel\ExcelServiceProvider::class,
+    Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class,
+    Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
+];
+
+php artisan ide-helper:generate

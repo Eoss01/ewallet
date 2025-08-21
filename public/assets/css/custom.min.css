@@ -1,0 +1,21 @@
+/*# sourceMappingURL=custom.min.css.map */
+
+.auth-one-bg-position {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  width: 100%;
+  height: 500px;
+}
+
+@media (max-width: 575.98px) {
+  .auth-one-bg-position {
+    height: 300px;
+  }
+}
+
+.readonly-input {
+    pointer-events: none;
+    background-color: #eff2f7;
+}

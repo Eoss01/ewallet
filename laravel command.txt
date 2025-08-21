@@ -1,0 +1,35 @@
+// For update or remove certain package in laravel
+composer update --no-scripts
+composer update --ignore-platform-reqs --no-scripts
+composer remove vendor/package
+
+// For clear Laravel cache
+php artisan key:generate
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+php artisan cache:clear
+php artisan optimize:clear
+
+// Create controller
+php artisan make:controller ClassController --resource
+
+// Create model
+php artisan make:model PointTransactionTier -mc
+php artisan make:model Setting -mc --resource
+php artisan make:model CustomActivityLog -m
+
+// Create Laravel setting
+php artisan make:observer TransactionObserver --model=Transaction
+php artisan make:import DeliveryAddressImport --model=DeliveryAddress
+php artisan make:export DeliveryAddressExport --model=DeliveryAddress
+php artisan make:command UpdateCentreBonus --command=log:cron
+php artisan make:mail SupplierMail
+php artisan make:middleware FontSize
+php artisan make:component Select2AjaxInput
+
+// Laravel Testing Command
+php artisan make:job RebateJob
+php artisan make:test WalletFeatureTest
+php artisan make:factory SettingFactory --model=Setting
+php artisan test --parallel
